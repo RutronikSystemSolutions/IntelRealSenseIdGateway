@@ -42,6 +42,8 @@
             idColumnHeader = new ColumnHeader();
             usersGroupBox = new GroupBox();
             deleteAllButton = new Button();
+            authFacePrintButton = new Button();
+            enrollFacePrintButton = new Button();
             statusStrip.SuspendLayout();
             usersGroupBox.SuspendLayout();
             SuspendLayout();
@@ -173,8 +175,9 @@
             // 
             // deleteAllButton
             // 
+            deleteAllButton.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             deleteAllButton.Enabled = false;
-            deleteAllButton.Location = new Point(349, 239);
+            deleteAllButton.Location = new Point(357, 358);
             deleteAllButton.Name = "deleteAllButton";
             deleteAllButton.Size = new Size(128, 29);
             deleteAllButton.TabIndex = 11;
@@ -182,11 +185,35 @@
             deleteAllButton.UseVisualStyleBackColor = true;
             deleteAllButton.Click += deleteAllButton_Click;
             // 
+            // authFacePrintButton
+            // 
+            authFacePrintButton.Enabled = false;
+            authFacePrintButton.Location = new Point(349, 91);
+            authFacePrintButton.Name = "authFacePrintButton";
+            authFacePrintButton.Size = new Size(125, 29);
+            authFacePrintButton.TabIndex = 12;
+            authFacePrintButton.Text = "Auth - Face Print";
+            authFacePrintButton.UseVisualStyleBackColor = true;
+            authFacePrintButton.Click += authFacePrintButton_Click;
+            // 
+            // enrollFacePrintButton
+            // 
+            enrollFacePrintButton.Enabled = false;
+            enrollFacePrintButton.Location = new Point(349, 239);
+            enrollFacePrintButton.Name = "enrollFacePrintButton";
+            enrollFacePrintButton.Size = new Size(125, 29);
+            enrollFacePrintButton.TabIndex = 13;
+            enrollFacePrintButton.Text = "Enr - Face Print";
+            enrollFacePrintButton.UseVisualStyleBackColor = true;
+            enrollFacePrintButton.Click += enrollFacePrintButton_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(900, 419);
+            Controls.Add(enrollFacePrintButton);
+            Controls.Add(authFacePrintButton);
             Controls.Add(deleteAllButton);
             Controls.Add(usersGroupBox);
             Controls.Add(enrollButton);
@@ -224,5 +251,7 @@
         private GroupBox usersGroupBox;
         private ColumnHeader idColumnHeader;
         private Button deleteAllButton;
+        private Button authFacePrintButton;
+        private Button enrollFacePrintButton;
     }
 }

@@ -19,7 +19,7 @@ namespace IntelRealSenseIdGUI
 
         private void Camera_OnNewAuthentication(object sender, RealSenseCamera.AuthenticateResult result, string userId)
         {
-            switch(result)
+            switch (result)
             {
                 case RealSenseCamera.AuthenticateResult.AccessForbidden:
                     logView.AddLog("Access Forbidden");
@@ -70,6 +70,8 @@ namespace IntelRealSenseIdGUI
                         authenticateButton.Enabled = true;
                         enrollButton.Enabled = true;
                         deleteAllButton.Enabled = true;
+                        authFacePrintButton.Enabled = true;
+                        enrollFacePrintButton.Enabled = true;
                         break;
                     }
                 case RealSenseCamera.ConnectionState.Iddle:
@@ -82,6 +84,8 @@ namespace IntelRealSenseIdGUI
                         authenticateButton.Enabled = false;
                         enrollButton.Enabled = false;
                         deleteAllButton.Enabled = false;
+                        authFacePrintButton.Enabled = false;
+                        enrollFacePrintButton.Enabled = false;
                         break;
                     }
             }
@@ -211,6 +215,33 @@ namespace IntelRealSenseIdGUI
             }
 
             if (camera.Enroll(userId) != 0)
+            {
+                logView.AddLog(camera.GetLastError());
+            }
+        }
+
+        /// <summary>
+        /// Event handler: click on the "auth - face print" button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void authFacePrintButton_Click(object sender, EventArgs e)
+        {
+            if (camera.ExtractFacePrintForAuth() != 0)
+            {
+                logView.AddLog(camera.GetLastError());
+            }
+        }
+
+        /// <summary>
+        /// Event handler: click on the "enroll - face print" button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void enrollFacePrintButton_Click(object sender, EventArgs e)
+        {
+            // TODO: ask for name
+            if (camera.ExtractFacePrintForEnroll() != 0)
             {
                 logView.AddLog(camera.GetLastError());
             }

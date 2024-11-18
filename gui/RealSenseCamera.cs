@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -302,6 +303,129 @@ namespace IntelRealSenseIdGUI
             if (retval != Status.Ok)
             {
                 AddError("Enroll: " + retval.ToString());
+                return -2;
+            }
+
+            return 0;
+        }
+
+        #region "Authenticate face print callbacks"
+
+        public void AuthFacePrintHintCallback(AuthStatus status, IntPtr ctx)
+        {
+            System.Diagnostics.Debug.WriteLine("AuthFacePrintHintCallback");
+        }
+
+        public void AuthFacePrintFaceDetecedCallback(IntPtr faces, int count, uint ts, IntPtr ctx)
+        {
+            System.Diagnostics.Debug.WriteLine("AuthFacePrintFaceDetecedCallback");
+        }
+
+        public void AuthFacePrintExtractionResultCallback(AuthStatus status, IntPtr faceprints, IntPtr ctx)
+        {
+            System.Diagnostics.Debug.WriteLine("AuthFacePrintExtractionResultCallback");
+            System.Diagnostics.Debug.WriteLine("status " + status);
+
+            if (status != AuthStatus.Success) return;
+
+            // Convert
+            var tmp = Marshal.PtrToStructure(faceprints, typeof(ExtractedFaceprints));
+            if (tmp == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Cannot convert object");
+                return;
+            }
+            ExtractedFaceprints extractedFaceprints = (ExtractedFaceprints)tmp;
+
+            // TODO match or not?
+
+            return;
+        }
+
+        #endregion
+
+        public int ExtractFacePrintForAuth()
+        {
+            if (authenticator == null)
+            {
+                AddError("ExtractFacePrintForAuth - authenticator is null");
+                return -1;
+            }
+
+            AuthExtractArgs authExtractArgs = new AuthExtractArgs
+            {
+                resultClbk = AuthFacePrintExtractionResultCallback,
+                hintClbk = AuthFacePrintHintCallback,
+                faceDetectedClbk = AuthFacePrintFaceDetecedCallback
+            };
+
+            Status retval = authenticator.AuthenticateExtractFaceprints(authExtractArgs);
+            if (retval != Status.Ok)
+            {
+                AddError("ExtractFacePrintForAuth: " + retval);
+                return -2;
+            }
+
+            return 0;
+        }
+
+        #region "Enroll face print callbacks"
+
+        public void EnrollFacePrintFaceDetectedCallback(IntPtr faces, int count, uint ts, IntPtr ctx)
+        {
+            System.Diagnostics.Debug.WriteLine("EnrollFacePrintFaceDetectedCallback");
+        }
+        public void EnrollFacePrintHintCallback(EnrollStatus status, IntPtr ctx)
+        {
+            System.Diagnostics.Debug.WriteLine("EnrollFacePrintHintCallback: " + status);
+        }
+        public void EnrollFacePrintProgressCallback(FacePose status, IntPtr ctx)
+        {
+            System.Diagnostics.Debug.WriteLine("EnrollFacePrintProgressCallback");
+        }
+        public void EnrollFacePrintExtractionResultCallback(EnrollStatus status, IntPtr faceprintsHandle, IntPtr ctx)
+        {
+            System.Diagnostics.Debug.WriteLine("EnrollFacePrintExtractionResultCallback");
+            System.Diagnostics.Debug.WriteLine("status " + status);
+
+            if (status != EnrollStatus.Success) return;
+
+            // Convert
+            var tmp = Marshal.PtrToStructure(faceprintsHandle, typeof(ExtractedFaceprints));
+            if (tmp == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Cannot convert object");
+                return;
+            }
+            ExtractedFaceprints extractedFaceprints = (ExtractedFaceprints)tmp;
+
+            // TODO match or not?
+
+            return;
+        }
+
+        #endregion
+
+        public int ExtractFacePrintForEnroll()
+        {
+            if (authenticator == null)
+            {
+                AddError("ExtractFacePrintForAuth - authenticator is null");
+                return -1;
+            }
+
+            EnrollExtractArgs enrollExtractArgs = new EnrollExtractArgs
+            {
+                resultClbk = EnrollFacePrintExtractionResultCallback,
+                progressClbk = EnrollFacePrintProgressCallback,
+                hintClbk = EnrollFacePrintHintCallback,
+                faceDetectedClbk = EnrollFacePrintFaceDetectedCallback
+            };
+
+            Status retval = authenticator.EnrollExtractFaceprints(enrollExtractArgs);
+            if (retval != Status.Ok)
+            {
+                AddError("ExtractFacePrintForEnroll: " + retval);
                 return -2;
             }
 
