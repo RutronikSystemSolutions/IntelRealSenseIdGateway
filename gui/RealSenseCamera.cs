@@ -84,15 +84,15 @@ namespace IntelRealSenseIdGUI
             deviceController.Dispose();
 
             // SDK compatible with host version?
-            if (Authenticator.IsFwCompatibleWithHost(firmwareVersion) == false)
-            {
-                AddError(string.Format(
-                    "InitializeConnection - SDK not compatible. Should be {0} but is {1}",
-                    Authenticator.CompatibleFirmwareVersion(),
-                    firmwareVersion));
-                OnNewConnectionState?.Invoke(this, ConnectionState.Error);
-                return -4;
-            }
+            //if (Authenticator.IsFwCompatibleWithHost(firmwareVersion) == false)
+            //{
+            //    AddError(string.Format(
+            //        "InitializeConnection - SDK not compatible. Should be {0} but is {1}",
+            //        Authenticator.CompatibleFirmwareVersion(),
+            //        firmwareVersion));
+            //    OnNewConnectionState?.Invoke(this, ConnectionState.Error);
+            //    return -4;
+            //}
 
             authenticator = new Authenticator();
             retval = authenticator.Connect(new SerialConfig { port = portName });

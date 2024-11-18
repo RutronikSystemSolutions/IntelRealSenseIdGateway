@@ -9,11 +9,7 @@ namespace rsid
 {
     internal class Shared
     {
-#if DEBUG
-        public const string DllName = "rsid_c_debug";
-#else
         public const  string DllName = "rsid_c";        
-#endif //DEBUG
     }
 
     [StructLayout(LayoutKind.Sequential)]
