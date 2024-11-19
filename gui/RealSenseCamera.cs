@@ -1,6 +1,7 @@
 ﻿using rsid;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO.Ports;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -11,7 +12,17 @@ namespace IntelRealSenseIdGUI
 {
     public class RealSenseCamera
     {
-        private List<Faceprints> enrolledFacePrints = new List<Faceprints>();
+        private class ServerModeUser
+        {
+            public Faceprints faceprints;
+            public string name;
+
+            public ServerModeUser(Faceprints faceprints, string name)
+            {
+                this.faceprints = faceprints;
+                this.name = name;
+            }
+        }
 
         public enum ConnectionState
         {
@@ -28,6 +39,8 @@ namespace IntelRealSenseIdGUI
             Error
         }
 
+        private static int RSID_INDEX_IN_FEATURES_VECTOR_TO_FLAGS = 512;
+
         #region "Events"
 
         public delegate void OnNewConnectionStateEventHandler(object sender, ConnectionState state);
@@ -38,9 +51,14 @@ namespace IntelRealSenseIdGUI
 
         public delegate void OnNewUserDatabaseEventHandler(object sender, string[] users);
         public event OnNewUserDatabaseEventHandler? OnNewUserDatabase;
+        public event OnNewUserDatabaseEventHandler? OnNewServerModeUserDatabase;
 
         public delegate void OnNewAuthenticationEventHandler(object sender, AuthenticateResult result, string userId);
         public event OnNewAuthenticationEventHandler? OnNewAuthentication;
+
+        public delegate void OnNewServerModeAuthenticateResultEventHandler(object sender, string[] users, int[] success, int[] score);
+        public event OnNewServerModeAuthenticateResultEventHandler? OnNewServerModeAuthenticateResult;
+
 
         #endregion
 
@@ -48,6 +66,8 @@ namespace IntelRealSenseIdGUI
 
         private Authenticator? authenticator;
         private string? lastError;
+        private string? currentEnrollName;
+        private List<ServerModeUser> enrolledFacePrints = new List<ServerModeUser>();
 
         #endregion
 
@@ -345,6 +365,12 @@ namespace IntelRealSenseIdGUI
             }
             ExtractedFaceprints extractedFaceprints = (ExtractedFaceprints)tmp;
 
+            // Prepare results
+            string[] userNames = new string[enrolledFacePrints.Count];
+            int[] success = new int[enrolledFacePrints.Count];
+            int[] score = new int[enrolledFacePrints.Count];
+            
+
             for (int i = 0; i < enrolledFacePrints.Count; ++i)
             {
                 MatchArgs matchArgs = new MatchArgs();
@@ -357,15 +383,37 @@ namespace IntelRealSenseIdGUI
                     System.Diagnostics.Debug.WriteLine("Cannot convert object to MatchElement");
                     return;
                 }
+
                 matchArgs.newFaceprints = (MatchElement)tmpMatchElement;
-                matchArgs.existingFaceprints = enrolledFacePrints[i];
+
+                // Set correct flag (extracted from C++ example)
+                // == 1 -> FaVectorFlags::VecFlagValidWithMask
+                if (matchArgs.newFaceprints.featuresVector[RSID_INDEX_IN_FEATURES_VECTOR_TO_FLAGS] == 1)
+                {
+                    // = 2 -> FaOperationFlags::OpFlagAuthWithMask
+                    matchArgs.newFaceprints.flags = 2;
+                }
+                else
+                {
+                    // = 1 -> FaOperationFlags::OpFlagAuthWithoutMask
+                    matchArgs.newFaceprints.flags = 1;
+                }
+
+
+                matchArgs.existingFaceprints = enrolledFacePrints[i].faceprints;
                 matchArgs.updatedFaceprints = new Faceprints();
 
                 MatchResult matchResult = authenticator.MatchFaceprintsToFaceprints(ref matchArgs);
                 System.Diagnostics.Debug.WriteLine("Match result success" + matchResult.success);
                 System.Diagnostics.Debug.WriteLine("Match result score" + matchResult.score);
                 System.Diagnostics.Debug.WriteLine("Match result shouldUpdate" + matchResult.shouldUpdate);
+
+                userNames[i] = enrolledFacePrints[i].name;
+                success[i] = matchResult.success;
+                score[i] = matchResult.score;
             }
+
+            OnNewServerModeAuthenticateResult?.Invoke(this, userNames, success, score);
 
             return;
         }
@@ -390,8 +438,12 @@ namespace IntelRealSenseIdGUI
             Status retval = authenticator.AuthenticateExtractFaceprints(authExtractArgs);
             if (retval != Status.Ok)
             {
-                AddError("ExtractFacePrintForAuth: " + retval);
-                return -2;
+                // Check also against 0 because it seems that AuthenticateStatus is sometimes returned
+                if (retval != 0)
+                {
+                    AddError("ExtractFacePrintForAuth: " + retval);
+                    return -2;
+                }
             }
 
             return 0;
@@ -413,6 +465,20 @@ namespace IntelRealSenseIdGUI
         }
 
         /// <summary>
+        /// Extract the names of the server mode users
+        /// </summary>
+        /// <returns></returns>
+        private string[] generateServerModeUserList()
+        {
+            string[] retval = new string[enrolledFacePrints.Count];
+            for (int i = 0; i < enrolledFacePrints.Count; ++i)
+            {
+                retval[i] = enrolledFacePrints[i].name;
+            }
+            return retval;
+        }
+
+        /// <summary>
         /// Callback being called when the enroll (using face prints) proces is over
         /// Warning: the pointer points on a Faceprints object (and not on an ExtractedFacePrints as the authenticate process
         /// </summary>
@@ -426,6 +492,12 @@ namespace IntelRealSenseIdGUI
 
             if (status != EnrollStatus.Success) return;
 
+            if (currentEnrollName == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Name is null. Cannot store it.");
+                return;
+            }
+
             // Convert
             var tmp = Marshal.PtrToStructure(faceprintsHandle, typeof(Faceprints));
             if (tmp == null)
@@ -435,22 +507,25 @@ namespace IntelRealSenseIdGUI
             }
             Faceprints extractedFaceprints = (Faceprints)tmp;
 
-            enrolledFacePrints.Add(extractedFaceprints);
+            enrolledFacePrints.Add(new ServerModeUser(extractedFaceprints, currentEnrollName));
 
             System.Diagnostics.Debug.WriteLine(string.Format("{0} faces stored inside enrolled DB.", enrolledFacePrints.Count));
 
-            return;
+            OnNewServerModeUserDatabase?.Invoke(this, generateServerModeUserList());
         }
 
         #endregion
 
-        public int ExtractFacePrintForEnroll()
+        public int ExtractFacePrintForEnroll(string name)
         {
             if (authenticator == null)
             {
                 AddError("ExtractFacePrintForAuth - authenticator is null");
                 return -1;
             }
+
+            // Store the name to save it into the database
+            currentEnrollName = name;
 
             EnrollExtractArgs enrollExtractArgs = new EnrollExtractArgs
             {
@@ -468,6 +543,23 @@ namespace IntelRealSenseIdGUI
             }
 
             return 0;
+        }
+
+        /// <summary>
+        /// Send the "server mode" user database to listeners
+        /// </summary>
+        public void RequestServerModeUserList()
+        {
+            OnNewServerModeUserDatabase?.Invoke(this, generateServerModeUserList());
+        }
+
+        /// <summary>
+        /// Clear the "server mode" database
+        /// </summary>
+        public void DeleteServerModeUserList()
+        {
+            enrolledFacePrints.Clear();
+            OnNewServerModeUserDatabase?.Invoke(this, generateServerModeUserList());
         }
 
     }

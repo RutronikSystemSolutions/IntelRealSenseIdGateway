@@ -44,8 +44,21 @@
             deleteAllButton = new Button();
             authFacePrintButton = new Button();
             enrollFacePrintButton = new Button();
+            mainTabControl = new TabControl();
+            deviceModeTabPage = new TabPage();
+            serverModeTabPage = new TabPage();
+            serverModeDeleteAllButton = new Button();
+            serverModeGroupBox = new GroupBox();
+            serverModeUsersListView = new ListView();
+            serverModeUserIDColumnHeader = new ColumnHeader();
+            scoreColumnHeader = new ColumnHeader();
+            matchColumnHeader = new ColumnHeader();
             statusStrip.SuspendLayout();
             usersGroupBox.SuspendLayout();
+            mainTabControl.SuspendLayout();
+            deviceModeTabPage.SuspendLayout();
+            serverModeTabPage.SuspendLayout();
+            serverModeGroupBox.SuspendLayout();
             SuspendLayout();
             // 
             // comPortLabel
@@ -100,9 +113,9 @@
             // 
             statusStrip.ImageScalingSize = new Size(20, 20);
             statusStrip.Items.AddRange(new ToolStripItem[] { fwVersionToolStripStatusLabel });
-            statusStrip.Location = new Point(0, 393);
+            statusStrip.Location = new Point(0, 470);
             statusStrip.Name = "statusStrip";
-            statusStrip.Size = new Size(900, 26);
+            statusStrip.Size = new Size(888, 26);
             statusStrip.TabIndex = 5;
             statusStrip.Text = "statusStrip1";
             // 
@@ -115,15 +128,16 @@
             // logView
             // 
             logView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            logView.Location = new Point(491, 56);
+            logView.Location = new Point(392, 75);
             logView.Name = "logView";
-            logView.Size = new Size(397, 334);
+            logView.Size = new Size(484, 392);
             logView.TabIndex = 6;
             // 
             // authenticateButton
             // 
+            authenticateButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             authenticateButton.Enabled = false;
-            authenticateButton.Location = new Point(352, 56);
+            authenticateButton.Location = new Point(229, 16);
             authenticateButton.Name = "authenticateButton";
             authenticateButton.Size = new Size(128, 29);
             authenticateButton.TabIndex = 7;
@@ -133,8 +147,9 @@
             // 
             // enrollButton
             // 
+            enrollButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             enrollButton.Enabled = false;
-            enrollButton.Location = new Point(349, 204);
+            enrollButton.Location = new Point(232, 51);
             enrollButton.Name = "enrollButton";
             enrollButton.Size = new Size(128, 29);
             enrollButton.TabIndex = 8;
@@ -152,7 +167,7 @@
             usersListView.Location = new Point(3, 23);
             usersListView.MultiSelect = false;
             usersListView.Name = "usersListView";
-            usersListView.Size = new Size(328, 318);
+            usersListView.Size = new Size(214, 350);
             usersListView.TabIndex = 9;
             usersListView.UseCompatibleStateImageBehavior = false;
             usersListView.View = View.Details;
@@ -164,22 +179,22 @@
             // 
             // usersGroupBox
             // 
-            usersGroupBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            usersGroupBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             usersGroupBox.Controls.Add(usersListView);
-            usersGroupBox.Location = new Point(12, 46);
+            usersGroupBox.Location = new Point(6, 6);
             usersGroupBox.Name = "usersGroupBox";
-            usersGroupBox.Size = new Size(334, 344);
+            usersGroupBox.Size = new Size(220, 376);
             usersGroupBox.TabIndex = 10;
             usersGroupBox.TabStop = false;
             usersGroupBox.Text = "Users";
             // 
             // deleteAllButton
             // 
-            deleteAllButton.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            deleteAllButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             deleteAllButton.Enabled = false;
-            deleteAllButton.Location = new Point(357, 358);
+            deleteAllButton.Location = new Point(232, 347);
             deleteAllButton.Name = "deleteAllButton";
-            deleteAllButton.Size = new Size(128, 29);
+            deleteAllButton.Size = new Size(128, 35);
             deleteAllButton.TabIndex = 11;
             deleteAllButton.Text = "Delete all";
             deleteAllButton.UseVisualStyleBackColor = true;
@@ -187,37 +202,123 @@
             // 
             // authFacePrintButton
             // 
+            authFacePrintButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             authFacePrintButton.Enabled = false;
-            authFacePrintButton.Location = new Point(349, 91);
+            authFacePrintButton.Location = new Point(6, 350);
             authFacePrintButton.Name = "authFacePrintButton";
-            authFacePrintButton.Size = new Size(125, 29);
+            authFacePrintButton.Size = new Size(102, 29);
             authFacePrintButton.TabIndex = 12;
-            authFacePrintButton.Text = "Auth - Face Print";
+            authFacePrintButton.Text = "Authenticate";
             authFacePrintButton.UseVisualStyleBackColor = true;
             authFacePrintButton.Click += authFacePrintButton_Click;
             // 
             // enrollFacePrintButton
             // 
+            enrollFacePrintButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             enrollFacePrintButton.Enabled = false;
-            enrollFacePrintButton.Location = new Point(349, 239);
+            enrollFacePrintButton.Location = new Point(114, 350);
             enrollFacePrintButton.Name = "enrollFacePrintButton";
-            enrollFacePrintButton.Size = new Size(125, 29);
+            enrollFacePrintButton.Size = new Size(72, 29);
             enrollFacePrintButton.TabIndex = 13;
-            enrollFacePrintButton.Text = "Enr - Face Print";
+            enrollFacePrintButton.Text = "Enroll";
             enrollFacePrintButton.UseVisualStyleBackColor = true;
             enrollFacePrintButton.Click += enrollFacePrintButton_Click;
+            // 
+            // mainTabControl
+            // 
+            mainTabControl.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            mainTabControl.Controls.Add(deviceModeTabPage);
+            mainTabControl.Controls.Add(serverModeTabPage);
+            mainTabControl.Location = new Point(12, 46);
+            mainTabControl.Name = "mainTabControl";
+            mainTabControl.SelectedIndex = 0;
+            mainTabControl.Size = new Size(374, 421);
+            mainTabControl.TabIndex = 14;
+            // 
+            // deviceModeTabPage
+            // 
+            deviceModeTabPage.Controls.Add(authenticateButton);
+            deviceModeTabPage.Controls.Add(enrollButton);
+            deviceModeTabPage.Controls.Add(deleteAllButton);
+            deviceModeTabPage.Controls.Add(usersGroupBox);
+            deviceModeTabPage.Location = new Point(4, 29);
+            deviceModeTabPage.Name = "deviceModeTabPage";
+            deviceModeTabPage.Padding = new Padding(3);
+            deviceModeTabPage.Size = new Size(366, 388);
+            deviceModeTabPage.TabIndex = 0;
+            deviceModeTabPage.Text = "Device mode";
+            deviceModeTabPage.UseVisualStyleBackColor = true;
+            // 
+            // serverModeTabPage
+            // 
+            serverModeTabPage.Controls.Add(serverModeDeleteAllButton);
+            serverModeTabPage.Controls.Add(serverModeGroupBox);
+            serverModeTabPage.Controls.Add(enrollFacePrintButton);
+            serverModeTabPage.Controls.Add(authFacePrintButton);
+            serverModeTabPage.Location = new Point(4, 29);
+            serverModeTabPage.Name = "serverModeTabPage";
+            serverModeTabPage.Padding = new Padding(3);
+            serverModeTabPage.Size = new Size(366, 388);
+            serverModeTabPage.TabIndex = 1;
+            serverModeTabPage.Text = "Server mode";
+            serverModeTabPage.UseVisualStyleBackColor = true;
+            // 
+            // serverModeDeleteAllButton
+            // 
+            serverModeDeleteAllButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            serverModeDeleteAllButton.Enabled = false;
+            serverModeDeleteAllButton.Location = new Point(236, 350);
+            serverModeDeleteAllButton.Name = "serverModeDeleteAllButton";
+            serverModeDeleteAllButton.Size = new Size(124, 29);
+            serverModeDeleteAllButton.TabIndex = 14;
+            serverModeDeleteAllButton.Text = "Delete all";
+            serverModeDeleteAllButton.UseVisualStyleBackColor = true;
+            serverModeDeleteAllButton.Click += serverModeDeleteAllButton_Click;
+            // 
+            // serverModeGroupBox
+            // 
+            serverModeGroupBox.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            serverModeGroupBox.Controls.Add(serverModeUsersListView);
+            serverModeGroupBox.Location = new Point(6, 6);
+            serverModeGroupBox.Name = "serverModeGroupBox";
+            serverModeGroupBox.Size = new Size(354, 338);
+            serverModeGroupBox.TabIndex = 0;
+            serverModeGroupBox.TabStop = false;
+            serverModeGroupBox.Text = "Users";
+            // 
+            // serverModeUsersListView
+            // 
+            serverModeUsersListView.Columns.AddRange(new ColumnHeader[] { serverModeUserIDColumnHeader, scoreColumnHeader, matchColumnHeader });
+            serverModeUsersListView.Dock = DockStyle.Fill;
+            serverModeUsersListView.FullRowSelect = true;
+            serverModeUsersListView.GridLines = true;
+            serverModeUsersListView.Location = new Point(3, 23);
+            serverModeUsersListView.Name = "serverModeUsersListView";
+            serverModeUsersListView.Size = new Size(348, 312);
+            serverModeUsersListView.TabIndex = 1;
+            serverModeUsersListView.UseCompatibleStateImageBehavior = false;
+            serverModeUsersListView.View = View.Details;
+            // 
+            // serverModeUserIDColumnHeader
+            // 
+            serverModeUserIDColumnHeader.Text = "User Id";
+            serverModeUserIDColumnHeader.Width = 150;
+            // 
+            // scoreColumnHeader
+            // 
+            scoreColumnHeader.Text = "Score";
+            scoreColumnHeader.Width = 100;
+            // 
+            // matchColumnHeader
+            // 
+            matchColumnHeader.Text = "Match";
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(900, 419);
-            Controls.Add(enrollFacePrintButton);
-            Controls.Add(authFacePrintButton);
-            Controls.Add(deleteAllButton);
-            Controls.Add(usersGroupBox);
-            Controls.Add(enrollButton);
-            Controls.Add(authenticateButton);
+            ClientSize = new Size(888, 496);
+            Controls.Add(mainTabControl);
             Controls.Add(logView);
             Controls.Add(statusStrip);
             Controls.Add(disconnectButton);
@@ -231,6 +332,10 @@
             statusStrip.ResumeLayout(false);
             statusStrip.PerformLayout();
             usersGroupBox.ResumeLayout(false);
+            mainTabControl.ResumeLayout(false);
+            deviceModeTabPage.ResumeLayout(false);
+            serverModeTabPage.ResumeLayout(false);
+            serverModeGroupBox.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -253,5 +358,14 @@
         private Button deleteAllButton;
         private Button authFacePrintButton;
         private Button enrollFacePrintButton;
+        private TabControl mainTabControl;
+        private TabPage deviceModeTabPage;
+        private TabPage serverModeTabPage;
+        private GroupBox serverModeGroupBox;
+        private ListView serverModeUsersListView;
+        private ColumnHeader serverModeUserIDColumnHeader;
+        private Button serverModeDeleteAllButton;
+        private ColumnHeader scoreColumnHeader;
+        private ColumnHeader matchColumnHeader;
     }
 }

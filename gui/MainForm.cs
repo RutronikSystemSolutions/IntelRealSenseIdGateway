@@ -15,6 +15,43 @@ namespace IntelRealSenseIdGUI
             camera.OnNewConnectionState += Camera_OnNewConnectionState;
             camera.OnNewUserDatabase += Camera_OnNewUserDatabase;
             camera.OnNewAuthentication += Camera_OnNewAuthentication;
+            camera.OnNewServerModeUserDatabase += Camera_OnNewServerModeUserDatabase;
+            camera.OnNewServerModeAuthenticateResult += Camera_OnNewServerModeAuthenticateResult;
+        }
+
+        /// <summary>
+        /// Event handler: a new "server mode" authenticate result (with success) is available
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="users"></param>
+        /// <param name="success"></param>
+        /// <param name="score"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void Camera_OnNewServerModeAuthenticateResult(object sender, string[] users, int[] success, int[] score)
+        {
+            serverModeUsersListView.Items.Clear();
+            for (int i = 0; i < users.Length; i++)
+            {
+                ListViewItem item = new ListViewItem(new string[] { users[i], score[i].ToString(), success[i].ToString() });
+                serverModeUsersListView.Items.Add(item);
+            }
+            serverModeUsersListView.Invalidate();
+        }
+
+        /// <summary>
+        /// Event handler: a new "server mode" user database is available
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="users"></param>
+        private void Camera_OnNewServerModeUserDatabase(object sender, string[] users)
+        {
+            serverModeUsersListView.Items.Clear();
+            for (int i = 0; i < users.Length; i++)
+            {
+                ListViewItem item = new ListViewItem(new string[] { users[i], "-", "-" });
+                serverModeUsersListView.Items.Add(item);
+            }
+            serverModeUsersListView.Invalidate();
         }
 
         private void Camera_OnNewAuthentication(object sender, RealSenseCamera.AuthenticateResult result, string userId)
@@ -72,6 +109,7 @@ namespace IntelRealSenseIdGUI
                         deleteAllButton.Enabled = true;
                         authFacePrintButton.Enabled = true;
                         enrollFacePrintButton.Enabled = true;
+                        serverModeDeleteAllButton.Enabled = true;
                         break;
                     }
                 case RealSenseCamera.ConnectionState.Iddle:
@@ -86,6 +124,7 @@ namespace IntelRealSenseIdGUI
                         deleteAllButton.Enabled = false;
                         authFacePrintButton.Enabled = false;
                         enrollFacePrintButton.Enabled = false;
+                        serverModeDeleteAllButton.Enabled = false;
                         break;
                     }
             }
@@ -220,6 +259,8 @@ namespace IntelRealSenseIdGUI
             }
         }
 
+        #region "Server mode events"
+
         /// <summary>
         /// Event handler: click on the "auth - face print" button
         /// </summary>
@@ -227,6 +268,9 @@ namespace IntelRealSenseIdGUI
         /// <param name="e"></param>
         private void authFacePrintButton_Click(object sender, EventArgs e)
         {
+            // Request user list to update success and score
+            camera.RequestServerModeUserList();
+
             if (camera.ExtractFacePrintForAuth() != 0)
             {
                 logView.AddLog(camera.GetLastError());
@@ -240,11 +284,36 @@ namespace IntelRealSenseIdGUI
         /// <param name="e"></param>
         private void enrollFacePrintButton_Click(object sender, EventArgs e)
         {
-            // TODO: ask for name
-            if (camera.ExtractFacePrintForEnroll() != 0)
+            TextInputForm form = new TextInputForm("User name", "Please enter a user name");
+            if (form.ShowDialog() != DialogResult.OK) return;
+
+            string userId = form.GetInputValue();
+            if (userId.Length == 0)
+            {
+                logView.AddLog("User ID cannot be null");
+                return;
+            }
+
+            // Request user list to update success and score
+            camera.RequestServerModeUserList();
+
+            if (camera.ExtractFacePrintForEnroll(userId) != 0)
             {
                 logView.AddLog(camera.GetLastError());
             }
         }
+
+        /// <summary>
+        /// Event handler: delete all "server mode" user
+        /// Reminder: server mode means that the database is not stored on the camera module but somewhere else
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void serverModeDeleteAllButton_Click(object sender, EventArgs e)
+        {
+            camera.DeleteServerModeUserList();
+        }
+
+        #endregion
     }
 }
