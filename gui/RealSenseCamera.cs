@@ -391,15 +391,16 @@ namespace IntelRealSenseIdGUI
             if (status != EnrollStatus.Success) return;
 
             // Convert
-            var tmp = Marshal.PtrToStructure(faceprintsHandle, typeof(ExtractedFaceprints));
+            var tmp = Marshal.PtrToStructure(faceprintsHandle, typeof(Faceprints));
             if (tmp == null)
             {
                 System.Diagnostics.Debug.WriteLine("Cannot convert object");
                 return;
             }
-            ExtractedFaceprints extractedFaceprints = (ExtractedFaceprints)tmp;
+            Faceprints extractedFaceprints = (Faceprints)tmp;
 
             // TODO match or not?
+            System.Diagnostics.Debug.WriteLine("version is: " + extractedFaceprints.version);
 
             return;
         }
