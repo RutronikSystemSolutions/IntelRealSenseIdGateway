@@ -11,6 +11,8 @@ namespace IntelRealSenseIdGUI
 {
     public class RealSenseCamera
     {
+        private List<Faceprints> enrolledFacePrints = new List<Faceprints>();
+
         public enum ConnectionState
         {
             Iddle,
@@ -328,16 +330,42 @@ namespace IntelRealSenseIdGUI
 
             if (status != AuthStatus.Success) return;
 
+            if (authenticator == null)
+            {
+                System.Diagnostics.Debug.WriteLine("authenticator is null");
+                return;
+            }
+
             // Convert
             var tmp = Marshal.PtrToStructure(faceprints, typeof(ExtractedFaceprints));
             if (tmp == null)
             {
-                System.Diagnostics.Debug.WriteLine("Cannot convert object");
+                System.Diagnostics.Debug.WriteLine("Cannot convert object to ExtractedFacePrints");
                 return;
             }
             ExtractedFaceprints extractedFaceprints = (ExtractedFaceprints)tmp;
 
-            // TODO match or not?
+            for (int i = 0; i < enrolledFacePrints.Count; ++i)
+            {
+                MatchArgs matchArgs = new MatchArgs();
+                matchArgs.matcherConfidenceLevel = MatcherConfidenceLevel.Medium;
+
+                // Remark: strange because MatchElement as exactly the same definition as ExtractedFaceprints
+                var tmpMatchElement = Marshal.PtrToStructure(faceprints, typeof(MatchElement));
+                if (tmpMatchElement == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("Cannot convert object to MatchElement");
+                    return;
+                }
+                matchArgs.newFaceprints = (MatchElement)tmpMatchElement;
+                matchArgs.existingFaceprints = enrolledFacePrints[i];
+                matchArgs.updatedFaceprints = new Faceprints();
+
+                MatchResult matchResult = authenticator.MatchFaceprintsToFaceprints(ref matchArgs);
+                System.Diagnostics.Debug.WriteLine("Match result success" + matchResult.success);
+                System.Diagnostics.Debug.WriteLine("Match result score" + matchResult.score);
+                System.Diagnostics.Debug.WriteLine("Match result shouldUpdate" + matchResult.shouldUpdate);
+            }
 
             return;
         }
@@ -383,6 +411,14 @@ namespace IntelRealSenseIdGUI
         {
             System.Diagnostics.Debug.WriteLine("EnrollFacePrintProgressCallback");
         }
+
+        /// <summary>
+        /// Callback being called when the enroll (using face prints) proces is over
+        /// Warning: the pointer points on a Faceprints object (and not on an ExtractedFacePrints as the authenticate process
+        /// </summary>
+        /// <param name="status"></param>
+        /// <param name="faceprintsHandle"></param>
+        /// <param name="ctx"></param>
         public void EnrollFacePrintExtractionResultCallback(EnrollStatus status, IntPtr faceprintsHandle, IntPtr ctx)
         {
             System.Diagnostics.Debug.WriteLine("EnrollFacePrintExtractionResultCallback");
@@ -399,8 +435,9 @@ namespace IntelRealSenseIdGUI
             }
             Faceprints extractedFaceprints = (Faceprints)tmp;
 
-            // TODO match or not?
-            System.Diagnostics.Debug.WriteLine("version is: " + extractedFaceprints.version);
+            enrolledFacePrints.Add(extractedFaceprints);
+
+            System.Diagnostics.Debug.WriteLine(string.Format("{0} faces stored inside enrolled DB.", enrolledFacePrints.Count));
 
             return;
         }
