@@ -46,7 +46,7 @@ TARGET=APP_RDK2
 #
 # If APPNAME is edited, ensure to update or regenerate launch
 # configurations for your IDE.
-APPNAME=rdk2-usb-uart-um980
+APPNAME=rdk2-realsense-gateway
 
 # Name of toolchain to use. Options include:
 #
