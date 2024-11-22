@@ -2,7 +2,7 @@
 
 This code example enables to control (enroll user, authenticate user, read firmware version, ...) an Intel RealSense ID camera over USB.
 
-The RDK2 is used as a USB to UART converter, since the Intel RealSense ID camera (F450/F455) can be controlled over UART.
+The RDK2 is used as a USB to UART converter, since the Intel RealSense ID camera (F450) can be controlled over UART.
 
 Use the software located inside the gui/ directory to control the Intel RealSense ID camera.
 
@@ -21,24 +21,24 @@ You can find an example of what is possible below:
 
 - [ModusToolbox® software](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software/) **v3.x** [built with **v3.2**]
 - [RDK2](https://www.rutronik24.fr/produit/rutronik/rdk2/16440182.html)
-- Intel F455 module with UART signals exposed
+- Intel F450 module with UART signals exposed
 - 3.3V power supply (or 5V to 3.3V DC/DC converter) enabling to deliver at least 1.5A
 
 ## Hardware diagram
 
- <img src="pictures/intel_f455_connection.png" style="zoom:100%;" />
+ <img src="pictures/intel_f450_connection.png" style="zoom:100%;" />
 
- Following pins of the F455 should be connected:
+ Following pins of the F450 should be connected:
  - PIN 52: VCC (3.3V) - Maximum current consumption arround 1.5A
  - PIN 51: GND
- - PIN 47: CPU_TXD2 (output of F455) -> should be connected to RX of RDK2
- - PIN 49: CPU_RXD2 (input of F455) -> should be connected to TX of RDK2
+ - PIN 47: CPU_TXD2 (output of F450) -> should be connected to RX of RDK2
+ - PIN 49: CPU_RXD2 (input of F450) -> should be connected to TX of RDK2
 
 
 Following pins of the RDK2 should be connected:
-- GND: P3.7 or P3.6 (should be connected to the PIN 51 of F455)
-- ARD_UART_TX: P5.2 (should be connected to PIN 49 of F455)
-- ARD_UART_RX: P5.1 (should be connected to PIN 47 of F455)
+- GND: P3.7 or P3.6 (should be connected to the PIN 51 of F450)
+- ARD_UART_TX: P5.2 (should be connected to PIN 49 of F450)
+- ARD_UART_RX: P5.1 (should be connected to PIN 47 of F450)
 
 ## Using the code example with a ModusToolbox™ IDE:
 
@@ -53,7 +53,7 @@ To program the RDK2, use the Kit Prog3 USB connector.
 
 ## Operation
 
-- First power ON the F455 module (3.3V)
+- First power ON the F450 module (3.3V)
 - Then connected the RDK2 to your computer over USB
 - Open the software located inside gui/ directory (C#/.NET needed)
 - Select the correct COM port, connect, and then use the device
